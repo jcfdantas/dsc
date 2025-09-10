@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluxo de Venda - Animação</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #1a2530);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .modules-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .module {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            width: 200px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            opacity: 0.7;
+            transform: scale(0.95);
+        }
+
+        .module.active {
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .module h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8e8e8;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .module-content {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .data-item {
+            background: #f8f9fa;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .highlight {
+            background-color: #e3f2fd;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { background-color: #e3f2fd; }
+            50% { background-color: #bbdefb; }
+            100% { background-color: #e3f2fd; }
+        }
+
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .flow-animation {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e74c3c;
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+            opacity: 0;
+        }
+
+        .flow-path {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            margin: 40px 0;
+        }
+
+        .flow-line {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 4px;
+            background: #3498db;
+            transform: translateY(-50%);
+        }
+
+        .flow-point {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .flow-label {
+            position: absolute;
+            top: 60px;
+            width: 120px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .sale-data {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 800px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .sale-data h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .data-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .data-card h3 {
+            color: #3498db;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        @keyframes moveFlow {
+            0% { left: 5%; opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { left: 95%; opacity: 0; }
+        }
+
+        /* Animações para cada etapa */
+        @keyframes moveToEcommerce {
+            0% { left: 5%; opacity: 0; }
+            10% { opacity: 1; }
+            20% { left: 5%; opacity: 1; }
+            100% { left: 5%; opacity: 1; }
+        }
+
+        @keyframes moveToPDV {
+            0% { left: 5%; opacity: 0; }
+            10% { opacity: 1; }
+            20% { left: 20%; opacity: 1; }
+            100% { left: 20%; opacity: 1; }
+        }
+
+        @keyframes moveToVendas {
+            0% { left: 5%; opacity: 0; }
+            10% { opacity: 1; }
+            20% { left: 35%; opacity: 1; }
+            100% { left: 35%; opacity: 1; }
+        }
+
+        @keyframes moveToCRM {
+            0% { left: 5%; opacity: 0; }
+            10% { opacity: 1; }
+            20% { left: 50%; opacity: 1; }
+            100% { left: 50%; opacity: 1; }
+        }
+
+        @keyframes moveToFinanceiro {
+            0% { left: 5%; opacity: 0; }
+            10% { opacity: 1; }
+            20% { left: 65%; opacity: 1; }
+            100% { left: 65%; opacity: 1; }
+        }
+
+        @keyframes moveToERP {
+            0% { left: 5%; opacity: 0; }
+            10% { opacity: 1; }
+            20% { left: 80%; opacity: 1; }
+            100% { left: 80%; opacity: 1; }
+        }
+
+        @keyframes moveToEstoque {
+            0% { left: 5%; opacity: 0; }
+            10% { opacity: 1; }
+            20% { left: 95%; opacity: 1; }
+            100% { left: 95%; opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Fluxo de Venda - Animação</h1>
+        <p>Visualize o percurso de uma venda através do ecossistema comercial</p>
+    </header>
+
+    <div class="controls">
+        <button id="startBtn">Iniciar Venda</button>
+        <button id="resetBtn" disabled>Reiniciar</button>
+    </div>
+
+    <div class="flow-path">
+        <div class="flow-line"></div>
+        <div class="flow-point" style="left: 5%"></div>
+        <div class="flow-point" style="left: 20%"></div>
+        <div class="flow-point" style="left: 35%"></div>
+        <div class="flow-point" style="left: 50%"></div>
+        <div class="flow-point" style="left: 65%"></div>
+        <div class="flow-point" style="left: 80%"></div>
+        <div class="flow-point" style="left: 95%"></div>
+        
+        <div class="flow-label" style="left: 5%">E-commerce/Site</div>
+        <div class="flow-label" style="left: 20%">PDV</div>
+        <div class="flow-label" style="left: 35%">Vendas</div>
+        <div class="flow-label" style="left: 50%">CRM</div>
+        <div class="flow-label" style="left: 65%">Financeiro</div>
+        <div class="flow-label" style="left: 80%">ERP</div>
+        <div class="flow-label" style="left: 95%">Estoque</div>
+        
+        <div class="flow-animation" id="flowAnimation">V</div>
+    </div>
+
+    <div class="sale-data">
+        <h2>Dados da Venda</h2>
+        <div class="data-grid">
+            <div class="data-card">
+                <h3>Cliente</h3>
+                <p id="clientData">Aguardando dados...</p>
+            </div>
+            <div class="data-card">
+                <h3>Produtos</h3>
+                <p id="productsData">Aguardando dados...</p>
+            </div>
+            <div class="data-card">
+                <h3>Pagamento</h3>
+                <p id="paymentData">Aguardando dados...</p>
+            </div>
+            <div class="data-card">
+                <h3>Status</h3>
+                <p id="statusData">Não iniciada</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="modules-container">
+            <div class="module" id="moduleEcommerce">
+                <h2>E-commerce / Site</h2>
+                <div class="module-content">
+                    <div class="data-item">Aguardando pedido...</div>
+                </div>
+            </div>
+            
+            <div class="module" id="modulePdv">
+                <h2>PDV</h2>
+                <div class="module-content">
+                    <div class="data-item">Nenhuma transação</div>
+                </div>
+            </div>
+            
+            <div class="module" id="moduleVendas">
+                <h2>Vendas</h2>
+                <div class="module-content">
+                    <div class="data-item">Sem pedidos processados</div>
+                </div>
+            </div>
+            
+            <div class="module" id="moduleCrm">
+                <h2>CRM</h2>
+                <div class="module-content">
+                    <div class="data-item">Cliente não identificado</div>
+                </div>
+            </div>
+            
+            <div class="module" id="moduleFinanceiro">
+                <h2>Financeiro</h2>
+                <div class="module-content">
+                    <div class="data-item">Sem transações</div>
+                </div>
+            </div>
+            
+            <div class="module" id="moduleErp">
+                <h2>ERP</h2>
+                <div class="module-content">
+                    <div class="data-item">Sistema principal</div>
+                    <div class="data-item">Integrando operações...</div>
+                </div>
+            </div>
+            
+            <div class="module" id="moduleEstoque">
+                <h2>Estoque</h2>
+                <div class="module-content">
+                    <div class="data-item">Produtos disponíveis</div>
+                    <div class="data-item">Produto A: 50 unidades</div>
+                    <div class="data-item">Produto B: 30 unidades</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Simulação de Fluxo de Venda | Ecossistema Comercial Integrado</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startBtn = document.getElementById('startBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const flowAnimation = document.getElementById('flowAnimation');
+            
+            const modules = {
+                ecommerce: document.getElementById('moduleEcommerce'),
+                pdv: document.getElementById('modulePdv'),
+                vendas: document.getElementById('moduleVendas'),
+                crm: document.getElementById('moduleCrm'),
+                financeiro: document.getElementById('moduleFinanceiro'),
+                erp: document.getElementById('moduleErp'),
+                estoque: document.getElementById('moduleEstoque')
+            };
+            
+            // Elementos de dados da venda
+            const clientData = document.getElementById('clientData');
+            const productsData = document.getElementById('productsData');
+            const paymentData = document.getElementById('paymentData');
+            const statusData = document.getElementById('statusData');
+            
+            // Dados de exemplo para a simulação
+            const sampleData = {
+                cliente: { nome: "João Silva", id: "C12345", email: "joao@email.com" },
+                produtos: [
+                    { nome: "Smartphone XYZ", id: "P001", preco: 999.90, quantidade: 1 },
+                    { nome: "Capa Protetora", id: "P002", preco: 49.90, quantidade: 1 }
+                ],
+                pedido: { id: "V98765", data: new Date().toLocaleDateString(), total: 1049.80 },
+                pagamento: { metodo: "Cartão de Crédito", status: "Aprovado", parcelas: 3 }
+            };
+            
+            startBtn.addEventListener('click', startSaleProcess);
+            resetBtn.addEventListener('click', resetProcess);
+            
+            function startSaleProcess() {
+                startBtn.disabled = true;
+                resetBtn.disabled = false;
+                
+                // Atualizar dados da venda
+                clientData.textContent = `${sampleData.cliente.nome} (${sampleData.cliente.email})`;
+                productsData.textContent = `${sampleData.produtos[0].nome} + ${sampleData.produtos[1].nome}`;
+                paymentData.textContent = `${sampleData.pagamento.metodo} - ${sampleData.pagamento.parcelas}x R$ ${(sampleData.pedido.total / sampleData.pagamento.parcelas).toFixed(2)}`;
+                statusData.textContent = "Em andamento";
+                
+                // Iniciar animação do fluxo
+                animateFlow();
+            }
+            
+            function animateFlow() {
+                // Resetar todos os módulos
+                resetModules();
+                
+                // Sequência de animação
+                setTimeout(() => activateModule('ecommerce', "Novo pedido recebido: #" + sampleData.pedido.id), 1000);
+                setTimeout(() => activateModule('pdv', "Processando pagamento via " + sampleData.pagamento.metodo), 3000);
+                setTimeout(() => activateModule('vendas', "Pedido " + sampleData.pedido.id + " confirmado"), 5000);
+                setTimeout(() => activateModule('crm', "Cliente: " + sampleData.cliente.nome + " - Histórico atualizado"), 7000);
+                setTimeout(() => activateModule('financeiro', "Recebimento de R$ " + sampleData.pedido.total + " registrado"), 9000);
+                setTimeout(() => activateModule('erp', "Integrando dados da venda " + sampleData.pedido.id), 11000);
+                setTimeout(() => {
+                    activateModule('estoque', "Baixa no estoque realizada");
+                    // Atualiza estoque
+                    modules.estoque.innerHTML = `
+                        <h2>Estoque</h2>
+                        <div class="module-content">
+                            <div class="data-item highlight">Baixa de estoque efetuada</div>
+                            <div class="data-item">Smartphone XYZ: 49 unidades (1 vendido)</div>
+                            <div class="data-item">Capa Protetora: 49 unidades (1 vendido)</div>
+                        </div>
+                    `;
+                    statusData.textContent = "Concluída";
+                }, 13000);
+                
+                // Animação da bolinha percorrendo o fluxo
+                flowAnimation.style.animation = 'moveFlow 14s linear';
+                setTimeout(() => {
+                    flowAnimation.style.animation = '';
+                    alert("Processo de venda concluído com sucesso!");
+                }, 14000);
+            }
+            
+            function activateModule(moduleId, message) {
+                // Remover destaque de todos os módulos
+                for (const key in modules) {
+                    modules[key].classList.remove('active');
+                }
+                
+                // Destacar módulo atual
+                modules[moduleId].classList.add('active');
+                
+                // Adicionar mensagem ao módulo
+                const newItem = document.createElement('div');
+                newItem.className = 'data-item highlight';
+                newItem.textContent = message;
+                
+                const moduleContent = modules[moduleId].querySelector('.module-content');
+                
+                // Manter apenas os últimos 3 itens
+                if (moduleContent.children.length >= 3) {
+                    moduleContent.removeChild(moduleContent.firstChild);
+                }
+                
+                moduleContent.appendChild(newItem);
+            }
+            
+            function resetModules() {
+                // Remover destaque de todos os módulos
+                for (const key in modules) {
+                    modules[key].classList.remove('active');
+                }
+                
+                // Restaurar conteúdo original dos módulos
+                modules.ecommerce.innerHTML = `
+                    <h2>E-commerce / Site</h2>
+                    <div class="module-content">
+                        <div class="data-item">Aguardando pedido...</div>
+                    </div>
+                `;
+                
+                modules.pdv.innerHTML = `
+                    <h2>PDV</h2>
+                    <div class="module-content">
+                        <div class="data-item">Nenhuma transação</div>
+                    </div>
+                `;
+                
+                modules.vendas.innerHTML = `
+                    <h2>Vendas</h2>
+                    <div class="module-content">
+                        <div class="data-item">Sem pedidos processados</div>
+                    </div>
+                `;
+                
+                modules.crm.innerHTML = `
+                    <h2>CRM</h2>
+                    <div class="module-content">
+                        <div class="data-item">Cliente não identificado</div>
+                    </div>
+                `;
+                
+                modules.financeiro.innerHTML = `
+                    <h2>Financeiro</h2>
+                    <div class="module-content">
+                        <div class="data-item">Sem transações</div>
+                    </div>
+                `;
+                
+                modules.erp.innerHTML = `
+                    <h2>ERP</h2>
+                    <div class="module-content">
+                        <div class="data-item">Sistema principal</div>
+                        <div class="data-item">Integrando operações...</div>
+                    </div>
+                `;
+                
+                modules.estoque.innerHTML = `
+                    <h2>Estoque</h2>
+                    <div class="module-content">
+                        <div class="data-item">Produtos disponíveis</div>
+                        <div class="data-item">Smartphone XYZ: 50 unidades</div>
+                        <div class="data-item">Capa Protetora: 50 unidades</div>
+                    </div>
+                `;
+            }
+            
+            function resetProcess() {
+                startBtn.disabled = false;
+                resetBtn.disabled = true;
+                
+                // Resetar dados exibidos
+                clientData.textContent = "Aguardando dados...";
+                productsData.textContent = "Aguardando dados...";
+                paymentData.textContent = "Aguardando dados...";
+                statusData.textContent = "Não iniciada";
+                
+                // Resetar módulos
+                resetModules();
+                
+                // Parar animação
+                flowAnimation.style.animation = '';
+            }
+        });
+    </script>
+</body>
+</html>
